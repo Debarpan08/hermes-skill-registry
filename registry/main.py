@@ -1,0 +1,63 @@
+"""Hermes Skill Registry — FastAPI main application"""
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from registry.database import init_db
+from registry.api.skills import router as skills_router
+from registry.api.ratings import router as ratings_router
+from registry.api.search import router as search_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    print("Database initialized")
+    yield
+
+
+app = FastAPI(
+    title="Hermes Skill Registry",
+    description="npm for Hermes skills — publish, discover, install, rate",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(skills_router, prefix="/api/v1")
+app.include_router(ratings_router, prefix="/api/v1")
+app.include_router(search_router, prefix="/api/v1")
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "hermes-skill-registry"}
+
+
+@app.get("/")
+async def root():
+    return {
+        "service": "Hermes Skill Registry",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "endpoints": {
+            "search": "/api/v1/search?q=&category=&tags=&sort=",
+            "trending": "/api/v1/trending",
+            "skills": "/api/v1/skills",
+            "ratings": "/api/v1/skills/{id}/ratings",
+            "publish": "POST /api/v1/skills",
+            "install": "GET /api/v1/skills/{id}/download",
+        }
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    from registry.config import API_HOST, API_PORT
+    uvicorn.run(app, host=API_HOST, port=API_PORT)

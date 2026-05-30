@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  registry:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - registry-data:/app/data
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./data/skills_registry.db
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - PUBLISH_API_KEY=hermes-dev-key-2026
+    restart: unless-stopped
+
+volumes:
+  registry-data:
