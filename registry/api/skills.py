@@ -1,37 +1,16 @@
 """Hermes Skill Registry — Skill CRUD endpoints"""
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from registry.database import (
-    get_db, create_skill, get_skill, search_skills,
+    get_db, create_skill, get_skill,
     update_skill, delete_skill, increment_downloads
 )
-from registry.schemas import SkillCreate, SkillUpdate, SkillResponse, SkillDetail, SearchResponse
+from registry.schemas import SkillCreate, SkillUpdate, SkillResponse, SkillDetail
 from registry.auth import require_publish_key
 
 router = APIRouter(prefix="/skills", tags=["skills"])
 
 
-@router.get("/search", response_model=SearchResponse)
-async def search(
-    q: str = Query(default="", description="Search query"),
-    category: str = Query(default=""),
-    tags: str = Query(default=""),
-    sort: str = Query(default="score", description="Sort: score, newest, popular, rating"),
-    page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=20, ge=1, le=100),
-):
-    db = await get_db()
-    skills, total = await search_skills(db, q, category, tags, sort, page, page_size)
-    await db.close()
-    return SearchResponse(skills=skills, total=total, page=page, page_size=page_size)
-
-
-@router.get("/trending")
-async def trending(limit: int = Query(default=10, ge=1, le=50)):
-    from registry.database import get_trending
-    db = await get_db()
-    skills = await get_trending(db, limit=limit)
-    await db.close()
-    return {"skills": skills, "period": "week"}
+# Note: /search and /trending are handled by the search router (search.py)
 
 
 @router.get("/{skill_id}", response_model=SkillDetail)

@@ -1,9 +1,15 @@
 """Hermes Skill Registry — Database setup and queries"""
 from __future__ import annotations
+import os
 import aiosqlite
 from datetime import datetime, timezone
 from typing import Optional
-DATABASE = "skills_registry.db"
+
+# Use /tmp for Vercel (read-only filesystem except /tmp)
+if os.getenv("VERCEL"):
+    DATABASE = "/tmp/skills_registry.db"
+else:
+    DATABASE = "skills_registry.db"
 
 
 def utcnow() -> str:
