@@ -8,4 +8,4 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from mangum import Mangum
 from registry.main import app
 
-handler = Mangum(app, lifespan="off")
+handler = Mangum(app, lifespan="on")

@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from registry.database import init_db
+from registry.seed import seed_database
 from registry.api.skills import router as skills_router
 from registry.api.ratings import router as ratings_router
 from registry.api.search import router as search_router
@@ -22,7 +23,8 @@ if not STATIC_DIR.exists():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
-    print("Database initialized")
+    await seed_database()
+    print("Database initialized and seeded")
     yield
 
 
