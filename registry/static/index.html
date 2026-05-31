@@ -300,7 +300,7 @@ function cardHTML(s) {
 
 // Copy install command
 function copyInstall(id, name) {
-  const cmd = `python3 /home/debarpan_jha/hermes-skill-registry/registry/cli.py install ${id}`;
+  const cmd = `hermes-registry install ${id}`;
   navigator.clipboard.writeText(cmd).then(() => {
     showToast(`Copied: ${cmd}`);
   }).catch(() => {

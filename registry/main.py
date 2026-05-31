@@ -1,11 +1,22 @@
 """Hermes Skill Registry — FastAPI main application"""
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from registry.database import init_db
 from registry.api.skills import router as skills_router
 from registry.api.ratings import router as ratings_router
 from registry.api.search import router as search_router
+
+
+# Path to static files directory — works from both root and Vercel deployment
+STATIC_DIR = Path(__file__).parent / "static"
+if not STATIC_DIR.exists():
+    # Fallback for Vercel where cwd may differ
+    STATIC_DIR = Path(__file__).parent.parent / "registry" / "static"
 
 
 @asynccontextmanager
@@ -20,6 +31,8 @@ app = FastAPI(
     description="npm for Hermes skills — publish, discover, install, rate",
     version="1.0.0",
     lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 app.add_middleware(
@@ -34,6 +47,9 @@ app.include_router(skills_router, prefix="/api/v1")
 app.include_router(ratings_router, prefix="/api/v1")
 app.include_router(search_router, prefix="/api/v1")
 
+# Mount static assets
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
 
 @app.get("/health")
 async def health():
@@ -42,6 +58,10 @@ async def health():
 
 @app.get("/")
 async def root():
+    """Serve the web UI."""
+    index_path = STATIC_DIR / "index.html"
+    if index_path.exists():
+        return FileResponse(str(index_path), media_type="text/html")
     return {
         "service": "Hermes Skill Registry",
         "version": "1.0.0",
